@@ -4,6 +4,7 @@ export interface ConsultantAvatarProps {
   isSpeaking?: boolean;
   isWalking?: boolean;
   isWaving?: boolean;
+  isThinking?: boolean;
   className?: string;
 }
 
@@ -14,6 +15,7 @@ export interface ConsultantAvatarProps {
  * - Walking motion (alternating leg strides, arm swing, subtle walk bob)
  * - Waving greeting gesture (elevated arm waving "Hi!")
  * - Speaking animation (expressive lip movement)
+ * - Thinking state with subtle pulse animation
  * - Idle breathing & blinking
  * - Respects prefers-reduced-motion
  */
@@ -21,6 +23,7 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
   isSpeaking = false,
   isWalking = false,
   isWaving = false,
+  isThinking = false,
   className = "w-36 h-64"
 }) => {
   return (
@@ -29,6 +32,10 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
         @keyframes consultantBreathe {
           0%, 100% { transform: translateY(0px) scale(1); }
           50% { transform: translateY(-2px) scale(1.008); }
+        }
+        @keyframes consultantThinkGlow {
+          0%, 100% { filter: drop-shadow(0 0 4px rgba(255,107,26,0.3)); transform: scale(1); }
+          50% { filter: drop-shadow(0 0 12px rgba(255,107,26,0.7)); transform: scale(1.02); }
         }
         @keyframes consultantBlink {
           0%, 94%, 98%, 100% { transform: scaleY(1); }
@@ -80,6 +87,9 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
         .consultant-torso {
           animation: consultantBreathe 4s ease-in-out infinite;
           transform-origin: bottom center;
+        }
+        .consultant-thinking-glow {
+          animation: consultantThinkGlow 2s ease-in-out infinite;
         }
         .consultant-eyelids {
           animation: consultantBlink 4.5s infinite;
@@ -143,7 +153,7 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
         viewBox="0 0 160 300"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`w-full h-full drop-shadow-2xl overflow-visible ${isWalking ? 'consultant-is-walking' : ''}`}
+        className={`w-full h-full drop-shadow-2xl overflow-visible ${isWalking ? 'consultant-is-walking' : ''} ${isThinking ? 'consultant-thinking-glow' : ''}`}
         aria-label="Julian Laurent - Fashion Consultant"
       >
         {/* Floor Shadow */}

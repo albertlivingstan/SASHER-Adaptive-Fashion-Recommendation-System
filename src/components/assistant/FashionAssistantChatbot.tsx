@@ -15,13 +15,16 @@ import {
   Maximize2,
   Minimize2,
   HelpCircle,
-  Eye
+  Eye,
+  Smile
 } from 'lucide-react';
 
 interface FashionAssistantChatbotProps {
   activeModalProduct?: Product | null;
   onSelectProduct?: (product: Product) => void;
 }
+
+type ConsultantEmotion = 'welcoming' | 'thinking' | 'complimenting' | 'analyzing';
 
 export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = ({
   activeModalProduct,
@@ -32,11 +35,14 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputText, setInputText] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [emotion, setEmotion] = useState<ConsultantEmotion>('welcoming');
+  
   const [messages, setMessages] = useState<AssistantMessage[]>([
     {
       id: 'init-1',
       sender: 'assistant',
-      text: "Hello! I'm Julian, your personal fashion and styling consultant. How may I assist your aesthetic curation today?",
+      text: "Hello! I'm Julian Laurent, your personal fashion and styling consultant. You look exceptional today—let me curate an immaculate aesthetic selection tailored precisely to your proportions.",
       timestamp: Date.now(),
       actionButtons: [
         { label: 'College Event Outfits', action: 'browse_category', payload: 'college' },
@@ -64,13 +70,34 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
     }
   }, [messages, isOpen, isMinimized]);
 
-  // Context awareness: When activeModalProduct changes, consultant sends a contextual message!
+  // Context awareness & Emotion state machine
   useEffect(() => {
     if (activeModalProduct) {
-      const greeting = assistantService.getProductContextGreeting(activeModalProduct);
-      setMessages(prev => [...prev, greeting]);
-      setIsSpeaking(true);
-      setTimeout(() => setIsSpeaking(false), 2000);
+      setEmotion('thinking');
+      setIsThinking(true);
+      
+      const timer = setTimeout(() => {
+        setIsThinking(false);
+        setEmotion('complimenting');
+        setIsSpeaking(true);
+        
+        const complimentPrefix: AssistantMessage = {
+          id: `comp-${Date.now()}`,
+          sender: 'assistant',
+          text: `✨ *Aesthetic Compliment*: Hmm, I noticed you lingering on the **${activeModalProduct.name}**. Excellent eye! That piece features a refined ${activeModalProduct.material || 'textile weave'} and architectural drape that will suit your silhouette and coloring impeccably.`,
+          timestamp: Date.now()
+        };
+
+        const greeting = assistantService.getProductContextGreeting(activeModalProduct);
+        setMessages(prev => [...prev, complimentPrefix, greeting]);
+
+        setTimeout(() => {
+          setIsSpeaking(false);
+          setEmotion('welcoming');
+        }, 2400);
+      }, 700);
+
+      return () => clearTimeout(timer);
     }
   }, [activeModalProduct]);
 
@@ -87,18 +114,28 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
 
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
-    setIsSpeaking(true);
+    setEmotion('thinking');
+    setIsThinking(true);
 
-    // Realistic consultative pause
+    // Simulated emotion state machine & consultative response delay
     setTimeout(() => {
+      setIsThinking(false);
+      setEmotion('analyzing');
+      setIsSpeaking(true);
+
       const response = assistantService.handleUserQuery(
         text,
         activeModalProduct || null,
         recentProductIds
       );
+      
       setMessages(prev => [...prev, response]);
-      setTimeout(() => setIsSpeaking(false), 2200);
-    }, 450);
+      
+      setTimeout(() => {
+        setIsSpeaking(false);
+        setEmotion('welcoming');
+      }, 2200);
+    }, 600);
   };
 
   const handleActionButton = (action: string, payload?: any) => {
@@ -109,7 +146,7 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
     } else if (action === 'higher_rated') {
       handleSend('Which products have high ratings?');
     } else if (action === 'style_outfit') {
-      handleSend('Style this outfit for me.');
+      handleSend('Style this outfit for me with complete accessories.');
     } else if (action === 'browse_category') {
       if (payload === 'college') handleSend('What should I wear for a college event?');
       else if (payload === 'casual_shirts') handleSend('Show me casual shirts.');
@@ -120,6 +157,14 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
       else if (payload === 'under_10000') handleSend('Show me products under 10000.');
       else handleSend(`Show me ${payload}`);
     }
+  };
+
+  const getStatusText = () => {
+    if (isThinking) return 'Thinking & Analyzing...';
+    if (isSpeaking) return 'Speaking...';
+    if (emotion === 'complimenting') return 'Complimenting Vibe';
+    if (emotion === 'analyzing') return 'Processing Gaze & Intent';
+    return 'Observing & Ready';
   };
 
   return (
@@ -154,14 +199,14 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
       {/* 2. CHATBOT MODAL DOCK (When Open) */}
       {isOpen && (
         <div className={`w-[94vw] sm:w-[480px] bg-[#121316] border border-[#27272a] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-300 ${
-          isMinimized ? 'h-16' : 'h-[580px] max-h-[82vh]'
+          isMinimized ? 'h-16' : 'h-[600px] max-h-[85vh]'
         }`}>
           
           {/* Chatbot Top Bar */}
           <div className="p-3.5 bg-[#18191d] border-b border-[#27272a] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full overflow-hidden bg-[#272930] border border-[#ff6b1a]/40 flex items-center justify-center shrink-0">
-                <ConsultantAvatar className="w-12 h-16 -mt-3 scale-90" />
+                <ConsultantAvatar isThinking={isThinking} className="w-12 h-16 -mt-3 scale-90" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -172,7 +217,7 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
                   </span>
                 </div>
                 <span className="text-[10px] text-[#71717a] block leading-tight">
-                  Lead Fashion Consultant &middot; Context Aware
+                  Lead Fashion Consultant &middot; {getStatusText()}
                 </span>
               </div>
             </div>
@@ -199,25 +244,29 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
           {!isMinimized && (
             <div className="flex-1 flex overflow-hidden">
               
-              {/* LEFT SIDE: STANDING CONSULTANT STAGE */}
+              {/* LEFT SIDE: STANDING CONSULTANT STAGE WITH EMOTIONS & THINKING STATE */}
               <div className="hidden sm:flex flex-col items-center justify-between w-36 bg-[#0e0f12] border-r border-[#27272a] p-3 shrink-0 relative overflow-hidden">
                 <div className="text-center z-10">
                   <span className="text-[9px] font-mono uppercase tracking-wider text-[#ff6b1a] block font-bold">
                     ATELIER STYLIST
                   </span>
-                  <span className="text-[10px] text-[#71717a] block">
-                    {isSpeaking ? 'Responding...' : 'Observing'}
+                  <span className="text-[10px] text-[#e2a876] block font-semibold">
+                    {isThinking ? '🧠 Thinking...' : isSpeaking ? '💬 Speaking...' : emotion === 'complimenting' ? '✨ Complimenting' : '👀 Observing'}
                   </span>
                 </div>
 
-                {/* Animated Human Avatar */}
+                {/* Animated Human Avatar with thinking & speaking states */}
                 <div className="my-auto py-2">
-                  <ConsultantAvatar isSpeaking={isSpeaking} className="w-32 h-56" />
+                  <ConsultantAvatar 
+                    isSpeaking={isSpeaking} 
+                    isThinking={isThinking}
+                    className="w-32 h-56 transition-all duration-300" 
+                  />
                 </div>
 
                 {/* Status indicator */}
                 <div className="text-[9px] font-mono text-[#71717a] text-center z-10">
-                  <span>Natural Gaze AI</span>
+                  <span>Persona AI v2.4</span>
                 </div>
               </div>
 
@@ -293,6 +342,14 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
                     </div>
                   ))}
 
+                  {/* Thinking Indicator Bubble */}
+                  {isThinking && (
+                    <div className="flex items-center gap-2 p-3 bg-[#18191d] border border-[#ff6b1a]/30 rounded-xl text-xs text-[#e2a876] animate-pulse">
+                      <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                      <span>Julian is pondering your aesthetic proportions and gaze telemetry...</span>
+                    </div>
+                  )}
+
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -315,7 +372,7 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
 
                   <button
                     type="submit"
-                    disabled={!inputText.trim()}
+                    disabled={!inputText.trim() || isThinking}
                     data-magnetic
                     className="p-2 bg-[#ff6b1a] hover:bg-[#e05a10] disabled:bg-[#27272a] disabled:text-[#71717a] text-[#09090b] rounded-xl transition-all cursor-pointer"
                     aria-label="Send query"

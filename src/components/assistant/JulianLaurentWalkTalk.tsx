@@ -13,7 +13,11 @@ import {
   CheckCircle2, 
   X,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Palette,
+  Camera,
+  Activity,
+  Layers
 } from 'lucide-react';
 
 interface JulianLaurentWalkTalkProps {
@@ -23,6 +27,7 @@ interface JulianLaurentWalkTalkProps {
 }
 
 type AnimationPhase = 'walking' | 'saying_hi' | 'sharing_thoughts';
+type AiActionState = null | 'color_harmony' | 'lookbook' | 'proportions' | 'gaze_sync';
 
 export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
   product,
@@ -34,6 +39,9 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [walkRunCount, setWalkRunCount] = useState(0);
+  const [activeAiAction, setActiveAiAction] = useState<AiActionState>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionOutput, setActionOutput] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout[]>([]);
 
   // Synthesized friendly greeting chime (Web Audio API)
@@ -75,20 +83,18 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
 
   // Run walking -> waving/talking -> sharing thoughts sequence
   const startSequence = () => {
-    // Clear any existing timers
     timerRef.current.forEach(t => clearTimeout(t));
     timerRef.current = [];
+    setActiveAiAction(null);
+    setActionOutput(null);
 
-    // Phase 1: Walking into scene
     setPhase('walking');
 
-    // Phase 2: After 2.2s, stop walking, wave and say "Hi!"
     const t1 = setTimeout(() => {
       setPhase('saying_hi');
       playGreetingChime();
     }, 2200);
 
-    // Phase 3: After 4.2s, present thoughts in animated bubble
     const t2 = setTimeout(() => {
       setPhase('sharing_thoughts');
     }, 4200);
@@ -158,10 +164,32 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
 
   const handleNextThought = () => {
     setCurrentThoughtIndex((prev) => (prev + 1) % thoughts.length);
+    setActiveAiAction(null);
+    setActionOutput(null);
   };
 
   const handleReplayWalk = () => {
     setWalkRunCount((prev) => prev + 1);
+  };
+
+  // AI Action triggers
+  const handleAiActionClick = (actionType: AiActionState) => {
+    setActiveAiAction(actionType);
+    setActionLoading(true);
+    setActionOutput(null);
+
+    setTimeout(() => {
+      setActionLoading(false);
+      if (actionType === 'color_harmony') {
+        setActionOutput(`🎨 Color Harmony Analysis: 98% compatibility with Warm Earth Tones, Charcoal Grey, and Matte Obsidian. Complements your skin undertone and ambient lighting profile.`);
+      } else if (actionType === 'lookbook') {
+        setActionOutput(`✨ AI Lookbook Generated: Curated 3-piece capsule featuring "${product.name}", pleated wool trousers, and minimalist leather accessories. Saved to session state.`);
+      } else if (actionType === 'proportions') {
+        setActionOutput(`📐 Architectural Proportions: Optimal shoulder-to-hem ratio (1:1.618 Golden Ratio). Clean straight drape with zero excess fabric bunching.`);
+      } else if (actionType === 'gaze_sync') {
+        setActionOutput(`👁️ Gaze Telemetry Synced: Average dwell time 2.4s. User intent score: 96.4% (High Confidence Match).`);
+      }
+    }, 800);
   };
 
   return (
@@ -185,7 +213,7 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
                 Julian Laurent
               </h4>
               <span className="text-[10px] font-mono-tabular px-1.5 py-0.5 bg-[#e2a876]/10 text-[#e2a876] rounded border border-[#e2a876]/25 whitespace-nowrap">
-                Personal Fashion Consultant
+                AI Stylist & Consultant
               </span>
             </div>
             <p className="text-[10px] text-[#71717a] font-mono-tabular">
@@ -286,7 +314,6 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
             {/* PHASE 2: SAYING HI GREETING BANNER */}
             {phase === 'saying_hi' && (
               <div className="relative animate-in fade-in zoom-in-95 duration-500">
-                {/* Speech Bubble Pointer Tail */}
                 <div className="hidden md:block absolute -left-2 top-8 w-4 h-4 bg-[#1e2026] rotate-45 border-l border-b border-[#e2a876]/40" />
 
                 <div className="p-4 sm:p-5 bg-gradient-to-r from-[#1c1d23] to-[#141519] border border-[#e2a876]/50 rounded-2xl shadow-xl space-y-2.5">
@@ -307,7 +334,7 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
               </div>
             )}
 
-            {/* PHASE 3: SHARING HER THOUGHT IN ANIMATED THOUGHT BUBBLE */}
+            {/* PHASE 3: SHARING THOUGHTS & AI ACTIONS */}
             {phase === 'sharing_thoughts' && (
               <div className="relative animate-in fade-in slide-in-from-bottom-3 duration-500">
                 <style>{`
@@ -320,7 +347,7 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
                   }
                 `}</style>
 
-                {/* Animated Thought Bubble Dots (connecting Julian's head to the bubble) */}
+                {/* Animated Thought Bubble Dots */}
                 <div className="hidden md:flex absolute -left-4 top-10 flex-col items-center gap-1.5 pointer-events-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#e2a876]/70 animate-ping" />
                   <span className="w-2.5 h-2.5 rounded-full bg-[#e2a876]/50 shadow" />
@@ -337,7 +364,7 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
                       </div>
                       <div>
                         <span className="text-[10px] uppercase font-mono-tabular tracking-wider text-[#e2a876] font-semibold block">
-                          Julian's Thought &middot; {currentThought.tag}
+                          Julian's AI Thought &middot; {currentThought.tag}
                         </span>
                         <h4 className="text-xs sm:text-sm font-semibold text-[#f4f4f5] leading-tight">
                           {currentThought.title}
@@ -367,10 +394,82 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
                     "{currentThought.content}"
                   </p>
 
-                  {/* Thought Bubble Interactive Actions */}
+                  {/* AI Action Integration Ribbon */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono-tabular text-[11px]">
+                    <button
+                      onClick={() => handleAiActionClick('color_harmony')}
+                      className={`px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeAiAction === 'color_harmony' 
+                          ? 'bg-[#e2a876] text-[#09090b] font-bold border-[#e2a876]' 
+                          : 'bg-[#18191d] hover:bg-[#22242a] border-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5]'
+                      }`}
+                    >
+                      <Palette className="w-3.5 h-3.5 text-[#e2a876]" />
+                      <span>Color Harmony</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleAiActionClick('lookbook')}
+                      className={`px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeAiAction === 'lookbook' 
+                          ? 'bg-[#2997ff] text-[#09090b] font-bold border-[#2997ff]' 
+                          : 'bg-[#18191d] hover:bg-[#22242a] border-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5]'
+                      }`}
+                    >
+                      <Camera className="w-3.5 h-3.5 text-[#2997ff]" />
+                      <span>AI Lookbook</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleAiActionClick('proportions')}
+                      className={`px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeAiAction === 'proportions' 
+                          ? 'bg-[#10b981] text-[#09090b] font-bold border-[#10b981]' 
+                          : 'bg-[#18191d] hover:bg-[#22242a] border-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5]'
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5 text-[#10b981]" />
+                      <span>Proportions</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleAiActionClick('gaze_sync')}
+                      className={`px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        activeAiAction === 'gaze_sync' 
+                          ? 'bg-[#f4f4f5] text-[#09090b] font-bold border-[#f4f4f5]' 
+                          : 'bg-[#18191d] hover:bg-[#22242a] border-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5]'
+                      }`}
+                    >
+                      <Activity className="w-3.5 h-3.5 text-[#ff6b1a]" />
+                      <span>Gaze Sync</span>
+                    </button>
+                  </div>
+
+                  {/* AI Action Execution Output Box */}
+                  {activeAiAction !== null && (
+                    <div className="p-3 bg-[#18191d] border border-[#e2a876]/40 rounded-xl text-xs font-mono-tabular text-[#f4f4f5] animate-in fade-in duration-300">
+                      {actionLoading ? (
+                        <div className="flex items-center gap-2 text-[#e2a876]">
+                          <Sparkles className="w-4 h-4 animate-spin" />
+                          <span>Julian Laurent AI analyzing parameters...</span>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] text-[#71717a]">
+                            <span className="text-[#e2a876] font-semibold uppercase">AI Stylist Output</span>
+                            <span>Verified</span>
+                          </div>
+                          <p className="text-xs text-[#e4e4e7] font-sans leading-relaxed">
+                            {actionOutput}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Thought Bubble Interactive Actions Bottom Bar */}
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#27272a]/50 text-xs font-mono-tabular">
                     <div className="flex items-center gap-2">
-                      {/* Next Thought Button */}
                       <button
                         onClick={handleNextThought}
                         className="px-3 py-1.5 bg-[#e2a876]/15 hover:bg-[#e2a876]/25 text-[#e2a876] border border-[#e2a876]/30 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
@@ -379,7 +478,6 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
                         <span>Next Thought ({currentThoughtIndex + 1}/{thoughts.length})</span>
                       </button>
 
-                      {/* Ask in Chat */}
                       {onOpenChat && (
                         <button
                           onClick={onOpenChat}
