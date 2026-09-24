@@ -46,6 +46,13 @@ class EyeTrackingManager {
     }
   }
 
+  public updateGazeCoordinates(x: number, y: number) {
+    if (!this.isTracking) return;
+    this.smoothedPoint.x = this.smoothedPoint.x + this.alpha * (x - this.smoothedPoint.x);
+    this.smoothedPoint.y = this.smoothedPoint.y + this.alpha * (y - this.smoothedPoint.y);
+    this.processGazePosition(this.smoothedPoint.x, this.smoothedPoint.y);
+  }
+
   private handlePointerMove = (e: MouseEvent) => {
     if (!this.isTracking) return;
 

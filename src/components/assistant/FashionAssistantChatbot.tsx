@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ConsultantAvatar } from './ConsultantAvatar';
 import { assistantService, AssistantMessage } from '../../services/assistantService';
+import { julianSpeechService } from '../../services/speechService';
 import { Product, RecommendedProduct } from '../../types';
 import { useSasher } from '../../context/SasherContext';
 import { 
@@ -16,7 +17,8 @@ import {
   Minimize2,
   HelpCircle,
   Eye,
-  Smile
+  Smile,
+  Volume2
 } from 'lucide-react';
 
 interface FashionAssistantChatbotProps {
@@ -70,7 +72,7 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
     }
   }, [messages, isOpen, isMinimized]);
 
-  // Context awareness & Emotion state machine
+  // Context awareness & Emotion state machine + TTS voice output
   useEffect(() => {
     if (activeModalProduct) {
       setEmotion('thinking');
@@ -79,7 +81,6 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
       const timer = setTimeout(() => {
         setIsThinking(false);
         setEmotion('complimenting');
-        setIsSpeaking(true);
         
         const complimentPrefix: AssistantMessage = {
           id: `comp-${Date.now()}`,
@@ -91,10 +92,18 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
         const greeting = assistantService.getProductContextGreeting(activeModalProduct);
         setMessages(prev => [...prev, complimentPrefix, greeting]);
 
-        setTimeout(() => {
-          setIsSpeaking(false);
-          setEmotion('welcoming');
-        }, 2400);
+        julianSpeechService.speak(
+          greeting.text,
+          () => setIsSpeaking(true),
+          () => {
+            setIsSpeaking(false);
+            setEmotion('welcoming');
+          },
+          () => {
+            setIsSpeaking(false);
+            setEmotion('welcoming');
+          }
+        );
       }, 700);
 
       return () => clearTimeout(timer);
@@ -117,11 +126,10 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
     setEmotion('thinking');
     setIsThinking(true);
 
-    // Simulated emotion state machine & consultative response delay
+    // Simulated emotion state machine & consultative response delay with TTS speech
     setTimeout(() => {
       setIsThinking(false);
       setEmotion('analyzing');
-      setIsSpeaking(true);
 
       const response = assistantService.handleUserQuery(
         text,
@@ -130,12 +138,20 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
       );
       
       setMessages(prev => [...prev, response]);
-      
-      setTimeout(() => {
-        setIsSpeaking(false);
-        setEmotion('welcoming');
-      }, 2200);
-    }, 600);
+
+      julianSpeechService.speak(
+        response.text,
+        () => setIsSpeaking(true),
+        () => {
+          setIsSpeaking(false);
+          setEmotion('welcoming');
+        },
+        () => {
+          setIsSpeaking(false);
+          setEmotion('welcoming');
+        }
+      );
+    }, 450);
   };
 
   const handleActionButton = (action: string, payload?: any) => {

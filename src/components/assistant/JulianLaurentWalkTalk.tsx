@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Product, RecommendedProduct } from '../../types';
 import { ConsultantAvatar } from './ConsultantAvatar';
+import { julianSpeechService } from '../../services/speechService';
 import { 
   Sparkles, 
   MessageSquare, 
@@ -36,13 +37,25 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
 }) => {
   const [phase, setPhase] = useState<AnimationPhase>('walking');
   const [currentThoughtIndex, setCurrentThoughtIndex] = useState(0);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [isVoiceSpeaking, setIsVoiceSpeaking] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [walkRunCount, setWalkRunCount] = useState(0);
   const [activeAiAction, setActiveAiAction] = useState<AiActionState>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionOutput, setActionOutput] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout[]>([]);
+
+  // Vocalize Julian Laurent's thoughts using Web Speech API TTS
+  const speakText = (text: string) => {
+    if (!isAudioEnabled) return;
+    julianSpeechService.speak(
+      text,
+      () => setIsVoiceSpeaking(true),
+      () => setIsVoiceSpeaking(false),
+      () => setIsVoiceSpeaking(false)
+    );
+  };
 
   // Synthesized friendly greeting chime (Web Audio API)
   const playGreetingChime = () => {
@@ -53,7 +66,6 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
       const ctx = new AudioCtx();
       const now = ctx.currentTime;
 
-      // Note 1 (E5: 659.25 Hz)
       const osc1 = ctx.createOscillator();
       const gain1 = ctx.createGain();
       osc1.type = 'sine';
@@ -65,7 +77,6 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
       osc1.start(now);
       osc1.stop(now + 0.35);
 
-      // Note 2 (B5: 987.77 Hz)
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'sine';
@@ -77,27 +88,35 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
       osc2.start(now + 0.15);
       osc2.stop(now + 0.55);
     } catch {
-      // Audio context might be restricted before user gesture
+      // Audio context fallbacks
     }
   };
 
   // Run walking -> waving/talking -> sharing thoughts sequence
   const startSequence = () => {
+    // Clear any existing timers & active speech
     timerRef.current.forEach(t => clearTimeout(t));
     timerRef.current = [];
+    julianSpeechService.stop();
+    setIsVoiceSpeaking(false);
     setActiveAiAction(null);
     setActionOutput(null);
 
     setPhase('walking');
 
+    // Phase 2: After 2.2s, stop walking, wave and speak "Hi!"
     const t1 = setTimeout(() => {
       setPhase('saying_hi');
       playGreetingChime();
+      speakText(`Hi! I'm Julian Laurent. Welcome! Let me share my curated styling thoughts for the ${product.name}.`);
     }, 2200);
 
+    // Phase 3: After 4.2s, present thoughts and vocalize initial thought
     const t2 = setTimeout(() => {
       setPhase('sharing_thoughts');
-    }, 4200);
+      const thoughts = getProductThoughts();
+      speakText(thoughts[0].content);
+    }, 4500);
 
     timerRef.current.push(t1, t2);
   };
@@ -107,6 +126,8 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
     setCurrentThoughtIndex(0);
     return () => {
       timerRef.current.forEach(t => clearTimeout(t));
+      julianSpeechService.stop();
+      setIsVoiceSpeaking(false);
     };
   }, [product.id, walkRunCount]);
 
@@ -163,9 +184,33 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
   const currentThought = thoughts[currentThoughtIndex % thoughts.length];
 
   const handleNextThought = () => {
-    setCurrentThoughtIndex((prev) => (prev + 1) % thoughts.length);
+    const nextIdx = (currentThoughtIndex + 1) % thoughts.length;
+    setCurrentThoughtIndex(nextIdx);
     setActiveAiAction(null);
     setActionOutput(null);
+    speakText(thoughts[nextIdx].content);
+  };
+
+  const handleSelectThought = (idx: number) => {
+    setCurrentThoughtIndex(idx);
+    setActiveAiAction(null);
+    setActionOutput(null);
+    speakText(thoughts[idx].content);
+  };
+
+  const handleToggleAudio = () => {
+    const next = !isAudioEnabled;
+    setIsAudioEnabled(next);
+    if (next) {
+      if (phase === 'saying_hi') {
+        speakText(`Hi! I'm Julian Laurent. Welcome! Let me share my curated styling thoughts for the ${product.name}.`);
+      } else {
+        speakText(currentThought.content);
+      }
+    } else {
+      julianSpeechService.stop();
+      setIsVoiceSpeaking(false);
+    }
   };
 
   const handleReplayWalk = () => {
@@ -228,15 +273,15 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-1.5 text-xs font-mono-tabular">
-          {/* Audio Chime Toggle */}
+          {/* Audio TTS Voice Toggle */}
           <button
-            onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+            onClick={handleToggleAudio}
             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
               isAudioEnabled 
                 ? 'bg-[#e2a876]/15 border-[#e2a876]/40 text-[#e2a876]' 
                 : 'bg-[#121316] border-[#27272a] text-[#71717a] hover:text-[#a1a1aa]'
             }`}
-            title={isAudioEnabled ? "Audio greeting chime ON" : "Audio greeting chime OFF"}
+            title={isAudioEnabled ? "Julian's Voice ON (Click to Mute)" : "Julian's Voice OFF (Click to Enable Voice)"}
           >
             {isAudioEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
           </button>
@@ -282,7 +327,7 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
               <ConsultantAvatar
                 isWalking={phase === 'walking'}
                 isWaving={phase === 'saying_hi'}
-                isSpeaking={phase === 'saying_hi' || phase === 'sharing_thoughts'}
+                isSpeaking={isVoiceSpeaking || phase === 'saying_hi'}
                 className="w-32 h-48 sm:w-36 sm:h-52"
               />
             </div>
@@ -377,7 +422,7 @@ export const JulianLaurentWalkTalk: React.FC<JulianLaurentWalkTalkProps> = ({
                       {thoughts.map((_, idx) => (
                         <button
                           key={idx}
-                          onClick={() => setCurrentThoughtIndex(idx)}
+                          onClick={() => handleSelectThought(idx)}
                           className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
                             idx === currentThoughtIndex 
                               ? 'w-4 bg-[#e2a876]' 

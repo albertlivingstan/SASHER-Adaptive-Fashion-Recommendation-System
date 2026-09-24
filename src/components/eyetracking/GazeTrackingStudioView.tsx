@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSasher } from '../../context/SasherContext';
+import { eyeTracker } from '../../services/eyeTracker';
 import { 
   Eye, 
   CheckCircle2, 
@@ -22,7 +23,7 @@ import {
   Gauge,
   Camera
 } from 'lucide-react';
-import { GAZE_TRACKING_ERROR_AUDIT } from '../../services/gazeTrackingEngine';
+import { GAZE_TRACKING_ERROR_AUDIT, correctedGazeEngine } from '../../services/gazeTrackingEngine';
 import { projectSuggestionService, SuggestedProject, GazeProductAnalysis } from '../../services/projectSuggestionService';
 import { Product } from '../../types';
 
@@ -248,17 +249,82 @@ export const GazeTrackingStudioView: React.FC = () => {
           ctx.lineWidth = 1;
           ctx.strokeRect(faceX, faceY, faceW, faceH);
 
-          // Simulated Organic Saccades & Fixation
-          const pupilShiftX = Math.sin(tick * 0.04) * 6;
-          const pupilShiftY = Math.cos(tick * 0.025) * 3.5;
-          const isBlinkFrame = Math.sin(tick * 0.02) < -0.96;
-
           // Eye Regions
           const leftEyeX = w / 2 - 50;
           const rightEyeX = w / 2 + 50;
           const eyeY = h / 2 - 25;
           const eyeW = 44;
           const eyeH = 28;
+
+          let pupilShiftX = Math.sin(tick * 0.04) * 6;
+          let pupilShiftY = Math.cos(tick * 0.025) * 3.5;
+          let isBlinkFrame = Math.sin(tick * 0.02) < -0.96;
+
+          // Real Computer Vision Webcam Processing
+          if (isWebcamActive && video && video.readyState >= 2) {
+            try {
+              const eyeBoxX = Math.max(0, Math.floor(leftEyeX - eyeW / 2));
+              const eyeBoxY = Math.max(0, Math.floor(eyeY - eyeH / 2));
+              const imgData = ctx.getImageData(eyeBoxX, eyeBoxY, eyeW, eyeH).data;
+
+              let minLum = 255;
+              let totalLum = 0;
+              let darkXSum = 0;
+              let darkYSum = 0;
+              let darkPixelCount = 0;
+
+              for (let py = 0; py < eyeH; py++) {
+                for (let px = 0; px < eyeW; px++) {
+                  const idx = (py * eyeW + px) * 4;
+                  const r = imgData[idx];
+                  const g = imgData[idx + 1];
+                  const b = imgData[idx + 2];
+                  const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                  totalLum += lum;
+                  if (lum < minLum) minLum = lum;
+                }
+              }
+
+              const avgLum = totalLum / (eyeW * eyeH);
+              const lumSpread = Math.max(1e-4, avgLum - minLum);
+              const threshold = minLum + lumSpread * 0.35;
+
+              for (let py = 0; py < eyeH; py++) {
+                for (let px = 0; px < eyeW; px++) {
+                  const idx = (py * eyeW + px) * 4;
+                  const lum = 0.299 * imgData[idx] + 0.587 * imgData[idx + 1] + 0.114 * imgData[idx + 2];
+                  if (lum <= threshold) {
+                    darkXSum += px;
+                    darkYSum += py;
+                    darkPixelCount++;
+                  }
+                }
+              }
+
+              if (darkPixelCount > 5) {
+                const rawCenterX = darkXSum / darkPixelCount;
+                const rawCenterY = darkYSum / darkPixelCount;
+                const realShiftX = (rawCenterX - eyeW / 2) * 0.8;
+                const realShiftY = (rawCenterY - eyeH / 2) * 0.8;
+
+                pupilShiftX = pupilShiftX * 0.4 + realShiftX * 0.6;
+                pupilShiftY = pupilShiftY * 0.4 + realShiftY * 0.6;
+              }
+
+              isBlinkFrame = avgLum < 15 || lumSpread < 6;
+            } catch (err) {
+              // Canvas origin protection fallback
+            }
+          }
+
+          // Calculate normalized screen projection coordinates
+          const normH = Math.max(0.05, Math.min(0.95, 0.50 + (pupilShiftX / 20)));
+          const normV = Math.max(0.05, Math.min(0.95, 0.50 + (pupilShiftY / 15)));
+          const targetScreenX = Math.round(normH * (typeof window !== 'undefined' ? window.innerWidth : 1440));
+          const targetScreenY = Math.round(normV * (typeof window !== 'undefined' ? window.innerHeight : 900));
+
+          // Sync with EyeTracker system
+          eyeTracker.updateGazeCoordinates(targetScreenX, targetScreenY);
 
           // Left Eye Box
           ctx.strokeStyle = 'rgba(41, 151, 255, 0.7)';
@@ -444,10 +510,10 @@ export const GazeTrackingStudioView: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 font-sans">
       
-      {/* Hidden live video element for webcam frame ingestion */}
+      {/* Live video element for webcam frame ingestion */}
       <video
         ref={videoRef}
-        className="hidden"
+        style={{ position: 'fixed', top: -9999, left: -9999, width: '640px', height: '480px', opacity: 0, pointerEvents: 'none' }}
         playsInline
         muted
         autoPlay
