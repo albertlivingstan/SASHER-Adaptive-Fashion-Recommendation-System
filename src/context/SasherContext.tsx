@@ -92,12 +92,13 @@ interface SasherContextType {
 const SasherContext = createContext<SasherContextType | undefined>(undefined);
 
 const INITIAL_CATEGORY_DISTRIBUTION: Record<CategoryType, number> = {
-  All: 0.14,
-  Outerwear: 0.16,
-  Tailoring: 0.15,
-  Knitwear: 0.14,
-  Tops: 0.14,
-  Trousers: 0.13,
+  All: 0.12,
+  Outerwear: 0.14,
+  Tailoring: 0.13,
+  Knitwear: 0.12,
+  Tops: 0.13,
+  Dresses: 0.12,
+  Trousers: 0.12,
   Footwear: 0.12,
   Accessories: 0.12
 };
@@ -200,6 +201,7 @@ export const SasherProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       Tailoring: 0,
       Knitwear: 0,
       Tops: 0,
+      Dresses: 0,
       Trousers: 0,
       Footwear: 0,
       Accessories: 0

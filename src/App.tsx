@@ -22,6 +22,7 @@ import { GoogleSignInModal } from './components/auth/GoogleSignInModal';
 import { CheckoutModal } from './components/checkout/CheckoutModal';
 import { GazeTrackingStudioView } from './components/eyetracking/GazeTrackingStudioView';
 import { PlatformAnalyticsView } from './components/analytics/PlatformAnalyticsView';
+import { FashionAssistantChatbot } from './components/assistant/FashionAssistantChatbot';
 import { RecommendedProduct } from './types';
 import { Sparkles, Eye, X } from 'lucide-react';
 
@@ -71,6 +72,7 @@ const MainLayout: React.FC = () => {
       <ProductDetailModal
         product={selectedProductForModal}
         onClose={() => setSelectedProductForModal(null)}
+        onSelectSimilarProduct={(p) => setSelectedProductForModal(p as RecommendedProduct)}
         onViewResearch={() => {
           setSelectedProductForModal(null);
           setCurrentTab('research');
@@ -84,9 +86,15 @@ const MainLayout: React.FC = () => {
       <CartDrawer />
       <CheckoutModal />
 
-      {/* Dynamic Adaptive Notification Toast (Rule 13) */}
+      {/* Animated Fashion Assistant Chatbot (Section 7, 8, 9) */}
+      <FashionAssistantChatbot
+        activeModalProduct={selectedProductForModal}
+        onSelectProduct={(p) => setSelectedProductForModal(p as RecommendedProduct)}
+      />
+
+      {/* Dynamic Adaptive Notification Toast (Positioned above chatbot) */}
       {recentAdaptiveNotification && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-md bg-[#18191d]/95 border border-[#10b981]/50 rounded-xl p-3.5 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-22 right-6 z-50 max-w-md bg-[#18191d]/95 border border-[#10b981]/50 rounded-xl p-3.5 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 text-xs animate-in slide-in-from-bottom-5">
           <div className="flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-[#10b981] animate-ping shrink-0" />
             <span className="text-[#f4f4f5] font-medium leading-snug">

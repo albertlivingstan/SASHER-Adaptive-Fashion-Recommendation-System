@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
+  RadialLinearScale,
   PointElement,
   LineElement,
-  BarElement,
-  RadialLinearScale,
-  ArcElement,
-  Title,
+  Filler,
   Tooltip,
-  Legend,
-  Filler
+  Legend
 } from 'chart.js';
-import { Line, Bar, Radar } from 'react-chartjs-2';
+import { Radar } from 'react-chartjs-2';
 import {
   PRODUCT_DEEP_RESEARCH,
   ProductSalesResearch,
@@ -42,17 +37,12 @@ import {
 } from 'lucide-react';
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
+  RadialLinearScale,
   PointElement,
   LineElement,
-  BarElement,
-  RadialLinearScale,
-  ArcElement,
-  Title,
+  Filler,
   Tooltip,
-  Legend,
-  Filler
+  Legend
 );
 
 type ActiveViewTab = 'sales' | 'graphical_model' | 'blueprint' | 'synthesis';
@@ -88,178 +78,6 @@ export const ProductDeepResearchSection: React.FC = () => {
     const nextIdx = (currentIndex + 1) % allProducts.length;
     setSelectedProductId(allProducts[nextIdx].productId);
     setActiveBlueprintNode(null);
-  };
-
-  // Multi-Year Sales Chart Data (2023 - 2026)
-  const yearlyChartData = {
-    labels: productData.yearlySales.map(d => `${d.year}${d.year === 2026 ? ' (YTD)' : ''}`),
-    datasets: [
-      {
-        type: 'line' as const,
-        label: 'Gross Revenue (₹ Lakhs)',
-        data: productData.yearlySales.map(d => d.revenueInLakhs),
-        borderColor: '#e2a876', // Warm amber gold
-        backgroundColor: 'rgba(226, 168, 118, 0.12)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.35,
-        pointRadius: 4,
-        pointHoverRadius: 8,
-        pointBackgroundColor: '#e2a876',
-        pointBorderColor: '#0c0d0e',
-        yAxisID: 'y'
-      },
-      {
-        type: 'bar' as const,
-        label: 'Units Sold (Annual Volume)',
-        data: productData.yearlySales.map(d => d.unitsSold),
-        backgroundColor: 'rgba(212, 163, 115, 0.35)', // Muted bronze
-        hoverBackgroundColor: 'rgba(212, 163, 115, 0.65)',
-        borderColor: '#d4a373',
-        borderWidth: 1,
-        borderRadius: 6,
-        yAxisID: 'y1'
-      }
-    ]
-  };
-
-  const yearlyChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        align: 'end' as const,
-        labels: {
-          color: '#a1a1aa',
-          font: { family: 'monospace', size: 11 },
-          usePointStyle: true,
-          boxWidth: 8
-        }
-      },
-      tooltip: {
-        backgroundColor: 'rgba(18, 19, 22, 0.95)',
-        titleColor: '#f4f4f5',
-        bodyColor: '#e4e4e7',
-        borderColor: '#3f3f46',
-        borderWidth: 1,
-        padding: 12,
-        titleFont: { family: 'monospace', size: 12 },
-        bodyFont: { family: 'monospace', size: 11 },
-        callbacks: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          afterBody: function (contexts: any) {
-            if (contexts.length > 0) {
-              const idx = contexts[0].dataIndex;
-              const yData = productData.yearlySales[idx];
-              return [
-                ` Customer Return Rate: ${yData.returnRate}%`,
-                ` Conversion Rate: ${yData.conversionRate}%`,
-                ` Full-Price Sell-Through: ${yData.fullPriceSellThroughRate}%`,
-                ` SASHER Attributed: ${yData.sasherAttributedRevenuePct}%`
-              ];
-            }
-            return [];
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: { color: 'rgba(255, 255, 255, 0.04)' },
-        ticks: { color: '#71717a', font: { family: 'monospace', size: 11 } }
-      },
-      y: {
-        type: 'linear' as const,
-        position: 'left' as const,
-        grid: { color: 'rgba(255, 255, 255, 0.04)' },
-        ticks: {
-          color: '#e2a876',
-          font: { family: 'monospace', size: 10 },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          callback: function (val: any) {
-            return `₹${val}L`;
-          }
-        },
-        title: {
-          display: true,
-          text: 'Revenue (₹ Lakhs)',
-          color: '#e2a876',
-          font: { family: 'monospace', size: 10 }
-        }
-      },
-      y1: {
-        type: 'linear' as const,
-        position: 'right' as const,
-        grid: { drawOnChartArea: false },
-        ticks: {
-          color: '#d4a373',
-          font: { family: 'monospace', size: 10 },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          callback: function (val: any) {
-            return `${val} pcs`;
-          }
-        },
-        title: {
-          display: true,
-          text: 'Units Sold',
-          color: '#d4a373',
-          font: { family: 'monospace', size: 10 }
-        }
-      }
-    }
-  };
-
-  // Quarterly Seasonality Bar Chart Data
-  const quarterlyChartData = {
-    labels: productData.quarterlySales2025.map(q => q.quarter),
-    datasets: [
-      {
-        label: 'Quarterly Revenue (₹ Lakhs)',
-        data: productData.quarterlySales2025.map(q => q.revenueInLakhs),
-        backgroundColor: [
-          'rgba(226, 168, 118, 0.35)',
-          'rgba(212, 163, 115, 0.25)',
-          'rgba(226, 168, 118, 0.65)',
-          'rgba(226, 168, 118, 0.90)'
-        ],
-        borderColor: '#e2a876',
-        borderWidth: 1,
-        borderRadius: 8
-      }
-    ]
-  };
-
-  const quarterlyChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: 'rgba(18, 19, 22, 0.95)',
-        borderColor: '#3f3f46',
-        borderWidth: 1,
-        titleColor: '#f4f4f5',
-        bodyColor: '#e4e4e7',
-        titleFont: { family: 'monospace', size: 11 },
-        bodyFont: { family: 'monospace', size: 11 }
-      }
-    },
-    scales: {
-      x: {
-        grid: { color: 'rgba(255, 255, 255, 0.04)' },
-        ticks: { color: '#a1a1aa', font: { family: 'monospace', size: 10 } }
-      },
-      y: {
-        grid: { color: 'rgba(255, 255, 255, 0.04)' },
-        ticks: {
-          color: '#71717a',
-          font: { family: 'monospace', size: 10 },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          callback: (v: any) => `₹${v}L`
-        }
-      }
-    }
   };
 
   // Graphical Model Radar Chart Data
@@ -514,7 +332,7 @@ export const ProductDeepResearchSection: React.FC = () => {
             }`}
           >
             <TrendingUp className="w-3 h-3" />
-            <span>Sales History</span>
+            <span>Research Analytics (3Y)</span>
           </button>
 
           <button
@@ -555,147 +373,161 @@ export const ProductDeepResearchSection: React.FC = () => {
         </div>
       </div>
 
-      {/* TAB 1: DEEP SALES ECONOMETRICS ACROSS PAST YEARS */}
+      {/* TAB 1: SECTION 11 COMPLIANT RESEARCH EVALUATION (NO FAKE 3Y GRAPHS) */}
       {activeTab === 'sales' && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          {/* Key Impact Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 bg-[#18191d] border border-[#27272a] rounded-xl">
-              <span className="text-[10px] font-mono-tabular uppercase text-[#71717a] block mb-1">
-                RETURN RATE REDUCTION
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-editorial text-3xl text-[#10b981]">
-                  -{productData.cumulativeReturnReductionPct}%
-                </span>
+          {/* Section 11 Required Explicit State Banner */}
+          <div className="p-6 bg-[#18191d] border border-[#27272a] rounded-2xl space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-[#e2a876]/10 text-[#e2a876] border border-[#e2a876]/20 shrink-0">
+                <TrendingUp className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-mono-tabular text-[#a1a1aa] mt-1 block">
-                Dropped from 24.5% to {productData.yearlySales[productData.yearlySales.length - 1].returnRate}% post-SASHER
-              </span>
-            </div>
-
-            <div className="p-4 bg-[#18191d] border border-[#27272a] rounded-xl">
-              <span className="text-[10px] font-mono-tabular uppercase text-[#71717a] block mb-1">
-                FULL-PRICE SELL-THROUGH
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-editorial text-3xl text-[#e2a876]">
-                  {productData.yearlySales[productData.yearlySales.length - 1].fullPriceSellThroughRate}%
-                </span>
-              </div>
-              <span className="text-[10px] font-mono-tabular text-[#a1a1aa] mt-1 block">
-                Zero markdown dilution required
-              </span>
-            </div>
-
-            <div className="p-4 bg-[#18191d] border border-[#27272a] rounded-xl">
-              <span className="text-[10px] font-mono-tabular uppercase text-[#71717a] block mb-1">
-                SASHER REVENUE ATTRIBUTION
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-editorial text-3xl text-[#f4f4f5]">
-                  {productData.yearlySales[productData.yearlySales.length - 1].sasherAttributedRevenuePct}%
-                </span>
-              </div>
-              <span className="text-[10px] font-mono-tabular text-[#10b981] mt-1 block">
-                Driven by session intent & gaze
-              </span>
-            </div>
-
-            <div className="p-4 bg-[#18191d] border border-[#27272a] rounded-xl">
-              <span className="text-[10px] font-mono-tabular uppercase text-[#71717a] block mb-1">
-                CONVERSION RATE LIFT
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-editorial text-3xl text-[#f4f4f5]">
-                  +{((productData.yearlySales[productData.yearlySales.length - 1].conversionRate / productData.yearlySales[0].conversionRate - 1) * 100).toFixed(0)}%
-                </span>
-              </div>
-              <span className="text-[10px] font-mono-tabular text-[#a1a1aa] mt-1 block">
-                {productData.yearlySales[0].conversionRate}% (2023) → {productData.yearlySales[productData.yearlySales.length - 1].conversionRate}% (Current)
-              </span>
-            </div>
-          </div>
-
-          {/* Primary Trend Line: Multi-Year Revenue and Volume */}
-          <div className="p-6 bg-[#18191d] border border-[#27272a] rounded-xl space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#27272a]">
-              <div>
-                <h4 className="font-editorial text-xl text-[#f4f4f5]">
-                  Historical Annual Revenue & Volume Trajectory (2023 - 2026)
+              <div className="space-y-1">
+                <h4 className="font-editorial text-2xl text-[#f4f4f5]">
+                  Research analytics will appear after evaluation data is connected.
                 </h4>
-                <p className="text-xs text-[#71717a] mt-0.5">
-                  Dual-axis longitudinal analysis: Gross revenue in Lakhs (INR) alongside total unit volume.
+                <p className="text-xs text-[#a1a1aa] leading-relaxed max-w-3xl">
+                  In accordance with scientific and peer-review integrity guidelines, no simulated or fabricated 3-year historical sales, ratings, or return curves are displayed. Longitudinal evaluation curves require linking a verified offline clickstream or multi-year retail transaction dataset.
                 </p>
               </div>
-              <div className="flex items-center gap-3 text-xs font-mono-tabular text-[#71717a]">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-0.5 bg-[#e2a876] inline-block" />
-                  <span className="text-[#e2a876]">Revenue (Lakhs)</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 bg-[#d4a373] inline-block rounded-xs" />
-                  <span className="text-[#d4a373]">Units Sold</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="h-72 w-full">
-              {/* @ts-ignore */}
-              <Line data={yearlyChartData} options={yearlyChartOptions} />
             </div>
           </div>
 
-          {/* Seasonality & Regional Demand Breakdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* 2025 Quarterly Distribution */}
-            <div className="lg:col-span-6 p-5 bg-[#18191d] border border-[#27272a] rounded-xl space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#27272a]">
+          {/* Section 11 Required Metrics Specification Matrix */}
+          <div className="p-6 bg-[#18191d] border border-[#27272a] rounded-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#27272a]">
+              <div>
                 <h5 className="font-editorial text-lg text-[#f4f4f5]">
-                  2025 Quarterly Revenue Seasonality
+                  Evaluation Metrics Specification (Longitudinal Framework)
                 </h5>
-                <span className="text-[10px] font-mono-tabular text-[#e2a876]">
-                  Annual Total: ₹489.6L
-                </span>
+                <p className="text-xs text-[#71717a] font-mono-tabular">
+                  Audited schema required for multi-year tracking (Section 11 specifications)
+                </p>
               </div>
-              <div className="h-48 w-full">
-                <Bar data={quarterlyChartData} options={quarterlyChartOptions} />
-              </div>
-              <p className="text-[11px] text-[#71717a] font-mono-tabular">
-                Peak velocity observed in Q4 (Holiday/Fall-Winter drop), capturing 41.8% of annual revenue.
-              </p>
+              <span className="text-[11px] font-mono-tabular text-[#e2a876] bg-[#e2a876]/10 px-2.5 py-1 rounded-md border border-[#e2a876]/20">
+                Status: Awaiting Feed
+              </span>
             </div>
 
-            {/* Regional Market Penetration */}
-            <div className="lg:col-span-6 p-5 bg-[#18191d] border border-[#27272a] rounded-xl space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#27272a]">
-                <h5 className="font-editorial text-lg text-[#f4f4f5]">
-                  Geographic Market Share & YoY Expansion
-                </h5>
-                <span className="text-[10px] font-mono-tabular text-[#a1a1aa]">
-                  Global Luxury Metros
-                </span>
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono-tabular">
+                <thead>
+                  <tr className="border-b border-[#27272a] text-[#71717a] uppercase text-[10px]">
+                    <th className="pb-3 font-medium">Metric Name</th>
+                    <th className="pb-3 font-medium">Value</th>
+                    <th className="pb-3 font-medium">Time Period</th>
+                    <th className="pb-3 font-medium">Dataset / Source</th>
+                    <th className="pb-3 font-medium text-right">Method Used</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#27272a]/50 text-[#e4e4e7]">
+                  {[
+                    {
+                      name: 'Recommendation Precision@10',
+                      value: 'Awaiting feed',
+                      period: '2024 → 2025 → 2026',
+                      source: 'Offline Replay Dataset',
+                      method: 'Chronological Leave-Last-Out Protocol'
+                    },
+                    {
+                      name: 'Recommendation Recall@10',
+                      value: 'Awaiting feed',
+                      period: '2024 → 2025 → 2026',
+                      source: 'E-Commerce Clickstream Logs',
+                      method: 'Top-K Hit-Ratio Evaluation'
+                    },
+                    {
+                      name: 'Harmonic F1-Score',
+                      value: 'Awaiting feed',
+                      period: '2024 → 2025 → 2026',
+                      source: 'Cross-Domain Fashion Logs',
+                      method: '2 · (Prec · Rec) / (Prec + Rec)'
+                    },
+                    {
+                      name: 'User Engagement (Click-Through Rate)',
+                      value: 'Live Session Telemetry',
+                      period: 'Active Session',
+                      source: 'In-Session Tracker (SasherContext)',
+                      method: 'Real-time Dwell & Click Ratio'
+                    },
+                    {
+                      name: 'Recommendation Acceptance Rate',
+                      value: 'Live Session Telemetry',
+                      period: 'Active Session',
+                      source: 'Cart & Wishlist Pipeline',
+                      method: 'Gaze Dwell to Purchase Attribution'
+                    },
+                    {
+                      name: 'Rating Trends & Feedback Distribution',
+                      value: 'Awaiting External Dataset',
+                      period: '2024 → 2026',
+                      source: 'Verified Customer Reviews',
+                      method: '5-Star Distribution Aggregation'
+                    }
+                  ].map((row, idx) => (
+                    <tr key={idx} className="hover:bg-[#121316]/50 transition-colors">
+                      <td className="py-3 font-semibold text-[#f4f4f5]">{row.name}</td>
+                      <td className="py-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] ${
+                          row.value.includes('Live') 
+                            ? 'bg-[#10b981]/15 text-[#10b981]' 
+                            : 'bg-[#27272a] text-[#a1a1aa]'
+                        }`}>
+                          {row.value}
+                        </span>
+                      </td>
+                      <td className="py-3 text-[#e2a876]">{row.period}</td>
+                      <td className="py-3 text-[#a1a1aa]">{row.source}</td>
+                      <td className="py-3 text-right text-[#71717a]">{row.method}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-              <div className="space-y-3 pt-1">
-                {productData.regionalDemand.map(reg => (
-                  <div key={reg.region} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs font-mono-tabular">
-                      <span className="text-[#f4f4f5]">{reg.region}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#10b981] text-[10px]">+{reg.growthRateYoY}% YoY</span>
-                        <span className="font-bold text-[#e2a876]">{reg.sharePercent}%</span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-[#121316] h-1.5 rounded-full overflow-hidden border border-[#27272a]">
-                      <div
-                        className="h-full bg-[#e2a876]"
-                        style={{ width: `${reg.sharePercent * 2.5}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* Connect Evaluation Feed / Schema Guide */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="p-5 bg-[#18191d] border border-[#27272a] rounded-xl space-y-3 font-mono-tabular text-xs">
+              <span className="text-[#e2a876] font-semibold text-xs uppercase tracking-wider block">
+                Connect External Research Telemetry
+              </span>
+              <p className="text-[#a1a1aa] leading-relaxed text-[11px]">
+                To visualize multi-year precision trends, hook your institution&apos;s evaluation server or offline replay test log via the secure API adapter:
+              </p>
+              <pre className="p-3 bg-[#121316] rounded-lg border border-[#27272a] text-[10px] text-[#10b981] overflow-x-auto">
+{`// Secure API Integration:
+POST /api/research/evaluation-feed
+{
+  "product_id": "${selectedProductId}",
+  "timeframe": "2024-2026",
+  "source": "RecSys26-Fashion-Benchmark",
+  "metrics": {
+    "precision_history": [/* real measured data */],
+    "recall_history": [/* real measured data */]
+  }
+}`}
+              </pre>
+            </div>
+
+            <div className="p-5 bg-[#18191d] border border-[#27272a] rounded-xl space-y-3 text-xs">
+              <span className="text-[#f4f4f5] font-semibold text-xs uppercase tracking-wider font-mono-tabular block">
+                Academic Integrity Compliance
+              </span>
+              <ul className="space-y-2 text-[#a1a1aa] text-[11px] leading-relaxed">
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] mt-1.5 shrink-0" />
+                  <span>No simulated or pseudo-random 3-year sales curves.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] mt-1.5 shrink-0" />
+                  <span>Product ratings reflect strictly real verified submissions.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] mt-1.5 shrink-0" />
+                  <span>Grounded in actual latent feature vectors ({productData.category} &middot; {productData.brand}).</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

@@ -4,15 +4,18 @@ export type CategoryType =
   | 'Tailoring'
   | 'Knitwear'
   | 'Tops'
+  | 'Dresses'
   | 'Trousers'
   | 'Footwear'
   | 'Accessories';
 
 export interface Product {
   id: string;
+  product_id?: string;
   name: string;
   brand: string;
   category: CategoryType;
+  subcategory?: string;
   articleType: string;
   price: number;
   originalPrice?: number;
@@ -26,10 +29,13 @@ export interface Product {
   description: string;
   material: string;
   fit: string;
-  rating: number;
-  reviewCount: number;
+  rating: number | null; // Nullable when no external dataset is connected
+  reviewCount: number | null; // Nullable when no external dataset is connected
   stock: number;
+  availableSizes?: string[];
+  attributes?: Record<string, string | number | boolean>;
   popularityScore: number; // 0-1
+  recommendationScore?: number | null;
   featureVector: {
     outerwear: number;
     tailoring: number;

@@ -142,6 +142,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({ onSelectProduct, onExp
               product={product}
               onSelect={onSelectProduct}
               onExplain={onExplainProduct}
+              onShowSimilar={(p) => {
+                setActiveCategory(p.category);
+                onSelectProduct(p);
+              }}
             />
           ))}
         </div>
