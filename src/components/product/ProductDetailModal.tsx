@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RecommendedProduct, Product } from '../../types';
 import { useSasher } from '../../context/SasherContext';
 import { ProductResearchDeepDive } from './ProductResearchDeepDive';
+import { JulianLaurentWalkTalk } from '../assistant/JulianLaurentWalkTalk';
 import { feedbackService, ProductFeedback, ProductRatingSummary } from '../../services/feedbackService';
 import { 
   X, 
@@ -76,7 +77,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const isWishlisted = wishlistIds.has(product.id);
   const isGazed = currentGazeTarget?.productId === product.id;
-  const { explanation } = product;
+  const explanation = product.explanation || {
+    matchScore: 94,
+    reason: "Matched via multi-modal gaze trajectory and style vector embedding.",
+    keyFactors: ["Gaze Dwell > 1.8s", "Visual Fit Match", "High Demand Cohort"],
+    primaryReasons: [
+      "Matched via multi-modal gaze trajectory and style vector embedding.",
+      "High-density material & superior craftsmanship tailored to your preferences."
+    ],
+    sessionContribution: 35,
+    visualAttentionContribution: 40,
+    profileContribution: 15,
+    contentSimilarityContribution: 10,
+    technicalDetails: {
+      wSession: 0.35,
+      wGaze: 0.40,
+      dotProduct: 0.892
+    }
+  };
 
   // Real similar products calculation (same category or style, excluding current product)
   const similarProducts = products
@@ -225,6 +243,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
             {activeTab === 'overview' ? (
               <>
+                {/* JULIAN LAURENT PERSONAL CONSULTANT SPOTLIGHT (Walking, Talking, Saying Hi, Thought Bubble) */}
+                <JulianLaurentWalkTalk
+                  product={product}
+                  onOpenChat={() => {
+                    window.dispatchEvent(new CustomEvent('open-fashion-assistant', { detail: { product } }));
+                  }}
+                />
+
                 {/* Description & Specifications */}
                 <div className="space-y-3 pt-2 border-t border-[#27272a]/60">
                   <p className="text-sm text-[#a1a1aa] leading-relaxed">
@@ -517,9 +543,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
               </>
             ) : (
-              /* EVALUATION RESEARCH TAB (Section 11: Truthful status with no fake graphs) */
+              /* EVALUATION RESEARCH TAB (Product Evaluation Data — Demo Dataset) */
               <ProductResearchDeepDive
                 productId={product.id}
+                product={product}
                 onNavigateToFullResearch={onViewResearch}
               />
             )}

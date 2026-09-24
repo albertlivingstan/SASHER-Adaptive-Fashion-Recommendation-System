@@ -22,6 +22,7 @@ import { GoogleSignInModal } from './components/auth/GoogleSignInModal';
 import { CheckoutModal } from './components/checkout/CheckoutModal';
 import { GazeTrackingStudioView } from './components/eyetracking/GazeTrackingStudioView';
 import { PlatformAnalyticsView } from './components/analytics/PlatformAnalyticsView';
+import { EvaluationAnalyticsView } from './components/analytics/EvaluationAnalyticsView';
 import { FashionAssistantChatbot } from './components/assistant/FashionAssistantChatbot';
 import { RecommendedProduct } from './types';
 import { Sparkles, Eye, X } from 'lucide-react';
@@ -62,9 +63,6 @@ const MainLayout: React.FC = () => {
 
       {/* 3-Zone Global Navbar */}
       <Navbar currentTab={currentTab} setCurrentTab={setCurrentTab} />
-
-      {/* Floating Top-Right Eye-Tracking Attention Control */}
-      <VisualIntentControl />
 
       {/* Modals & Slide-out Panels */}
       <CalibrationModal />
@@ -180,6 +178,8 @@ const MainLayout: React.FC = () => {
         )}
 
         {currentTab === 'gaze_studio' && <GazeTrackingStudioView />}
+
+        {currentTab === 'evaluation_analytics' && <EvaluationAnalyticsView />}
 
         {currentTab === 'platform_analytics' && <PlatformAnalyticsView />}
 

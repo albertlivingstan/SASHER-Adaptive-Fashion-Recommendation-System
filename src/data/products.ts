@@ -12,6 +12,47 @@ import { DUMMY_JSON_FASHION_PRODUCTS } from './dummyJsonProducts';
  */
 const CURATED_PRODUCTS: Product[] = [
   {
+    id: 'prod-featured-masterpiece',
+    product_id: 'prod-featured-masterpiece',
+    name: 'The Imperial Cashmere Atelier Trench',
+    brand: 'ATELIER NOIR',
+    category: 'Outerwear',
+    subcategory: 'Signature Coats',
+    articleType: 'Trench Coat',
+    price: 32999,
+    originalPrice: 38999,
+    currency: '₹',
+    imageUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80',
+    imageFallbackGradient: 'linear-gradient(145deg, #1c1917, #292524)',
+    gender: 'Unisex',
+    color: 'Camel Warm Ash',
+    season: 'Fall/Winter',
+    style: 'Architectural',
+    description: 'Hand-woven from rare 100% Mongolian Cashmere with a tailored waist belt, storm flap, and horn buttons. The ultimate flagship outerwear piece delivering peerless warmth and fluid architectural silhouette.',
+    material: '100% Mongolian Cashmere',
+    fit: 'Tailored Belted',
+    rating: 4.9,
+    reviewCount: 42,
+    stock: 12,
+    availableSizes: ['S', 'M', 'L', 'XL'],
+    attributes: {
+      fabricWeight: '680 gsm Cashmere',
+      closure: 'Belted Double Breasted',
+      drape: 'Immaculate Luxury'
+    },
+    popularityScore: 0.99,
+    featureVector: {
+      outerwear: 0.99,
+      tailoring: 0.85,
+      knitwear: 0.90,
+      minimalism: 0.95,
+      formal: 0.92,
+      casual: 0.60,
+      warmth: 0.98
+    },
+    collaborativeScore: 0.98
+  },
+  {
     id: 'prod-01',
     product_id: 'prod-01',
     name: 'Oversized Double-Breasted Wool Coat',

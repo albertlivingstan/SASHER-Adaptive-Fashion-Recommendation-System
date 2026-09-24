@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSasher } from '../../context/SasherContext';
 import { GoogleAuthButton } from '../auth/GoogleAuthButton';
+import { VisualIntentControl } from '../eyetracking/VisualIntentControl';
 import { Eye, Heart, ShoppingBag, EyeOff, ShieldCheck, Activity, Sun, Moon, Laptop } from 'lucide-react';
 
 interface NavbarProps {
@@ -76,6 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
           {[
             { id: 'discover', label: 'Discover' },
             { id: 'gaze_studio', label: 'Live Gaze HUD', hasPulse: true },
+            { id: 'evaluation_analytics', label: 'Evaluation Analytics', hasPulse: true },
             { id: 'platform_analytics', label: 'Platform Analytics' },
             { id: 'recommendations', label: 'Recommendations' },
             { id: 'insights', label: 'AI Insights' },
@@ -107,35 +109,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
           })}
         </nav>
 
-        {/* Zone 3: Actions + Google Auth + Eye-Tracker + Theme */}
+        {/* Zone 3: Actions + Google Auth + Theme */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Quick Gaze Sensor Toggle */}
-          <button
-            onClick={toggleEyeTracking}
-            data-magnetic
-            title={isEyeTrackingActive ? "Visual intent tracking is active (Click to pause)" : "Visual intent paused (Click to resume)"}
-            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono transition-all border cursor-pointer ${
-              isEyeTrackingActive
-                ? 'bg-[#18181b] border-[#27272a] text-[#f5f5f7] hover:border-[#ff6b1a]/60'
-                : 'bg-[#18181b]/50 border-transparent text-[#71717a] hover:text-[#a1a1a6]'
-            }`}
-          >
-            {isEyeTrackingActive ? (
-              <>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#30d158] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#30d158]"></span>
-                </span>
-                <span className="text-[11px] text-[#f5f5f7]">GAZE</span>
-                <span className="text-[10px] text-[#30d158]">ON</span>
-              </>
-            ) : (
-              <>
-                <EyeOff className="w-3.5 h-3.5 text-[#71717a]" />
-                <span className="text-[11px] text-[#71717a]">PAUSED</span>
-              </>
-            )}
-          </button>
 
           {/* Theme Toggle (System / Light / Dark) */}
           <button
@@ -176,6 +151,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
             <ShoppingBag className="w-3.5 h-3.5" />
             <span className="font-mono tabular-nums">{totalCartItems}</span>
           </button>
+
+          {/* Compact Visual Intent Eye Icon with Popover */}
+          <VisualIntentControl />
+
+
         </div>
       </div>
 

@@ -1,22 +1,26 @@
 import React from 'react';
 
-interface ConsultantAvatarProps {
+export interface ConsultantAvatarProps {
   isSpeaking?: boolean;
+  isWalking?: boolean;
+  isWaving?: boolean;
   className?: string;
 }
 
 /**
- * Animated Professional Fashion Consultant
- * Designed as an elegant, professional human stylist standing naturally.
- * Includes subtle CSS/SVG animations:
- * - Natural idle breathing
- * - Eyelid blinking
- * - Subtle hand gesture/movement
- * - Responsive mouth motion when speaking
+ * Animated Professional Fashion Consultant (Julian Laurent)
+ * Designed as an elegant, couture stylist.
+ * Features:
+ * - Walking motion (alternating leg strides, arm swing, subtle walk bob)
+ * - Waving greeting gesture (elevated arm waving "Hi!")
+ * - Speaking animation (expressive lip movement)
+ * - Idle breathing & blinking
  * - Respects prefers-reduced-motion
  */
 export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({ 
   isSpeaking = false,
+  isWalking = false,
+  isWaving = false,
   className = "w-36 h-64"
 }) => {
   return (
@@ -26,47 +30,110 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
           0%, 100% { transform: translateY(0px) scale(1); }
           50% { transform: translateY(-2px) scale(1.008); }
         }
-
         @keyframes consultantBlink {
           0%, 94%, 98%, 100% { transform: scaleY(1); }
           96% { transform: scaleY(0.08); }
         }
-
         @keyframes consultantGesture {
           0%, 100% { transform: rotate(0deg); }
           50% { transform: rotate(1.2deg); }
         }
-
         @keyframes consultantSpeak {
           0%, 100% { transform: scaleY(1); }
           50% { transform: scaleY(2.2); }
+        }
+        /* Walking Animations */
+        @keyframes consultantWalkBob {
+          0%, 100% { transform: translateY(0px); }
+          25% { transform: translateY(-5px); }
+          50% { transform: translateY(0px); }
+          75% { transform: translateY(-5px); }
+        }
+        @keyframes consultantLegLeftStride {
+          0%, 100% { transform: rotate(-16deg); }
+          50% { transform: rotate(16deg); }
+        }
+        @keyframes consultantLegRightStride {
+          0%, 100% { transform: rotate(16deg); }
+          50% { transform: rotate(-16deg); }
+        }
+        @keyframes consultantArmLeftSwing {
+          0%, 100% { transform: rotate(20deg); }
+          50% { transform: rotate(-20deg); }
+        }
+        @keyframes consultantArmRightSwing {
+          0%, 100% { transform: rotate(-20deg); }
+          50% { transform: rotate(20deg); }
+        }
+        /* Waving Animation */
+        @keyframes consultantWaveArm {
+          0%, 100% { transform: rotate(-45deg); }
+          25% { transform: rotate(-65deg); }
+          50% { transform: rotate(-45deg); }
+          75% { transform: rotate(-65deg); }
+        }
+        @keyframes consultantWaveHand {
+          0%, 100% { transform: rotate(-12deg); }
+          50% { transform: rotate(24deg); }
         }
 
         .consultant-torso {
           animation: consultantBreathe 4s ease-in-out infinite;
           transform-origin: bottom center;
         }
-
         .consultant-eyelids {
           animation: consultantBlink 4.5s infinite;
           transform-origin: center;
         }
-
         .consultant-gesture-arm {
           animation: consultantGesture 5s ease-in-out infinite;
           transform-origin: top left;
         }
-
         .consultant-speaking-mouth {
-          animation: consultantSpeak 0.28s ease-in-out infinite;
+          animation: consultantSpeak 0.22s ease-in-out infinite;
           transform-origin: center;
+        }
+
+        .consultant-is-walking {
+          animation: consultantWalkBob 0.65s ease-in-out infinite !important;
+        }
+        .consultant-leg-left-walk {
+          animation: consultantLegLeftStride 0.65s ease-in-out infinite;
+          transform-origin: 68px 172px;
+        }
+        .consultant-leg-right-walk {
+          animation: consultantLegRightStride 0.65s ease-in-out infinite;
+          transform-origin: 92px 172px;
+        }
+        .consultant-arm-left-walk {
+          animation: consultantArmLeftSwing 0.65s ease-in-out infinite;
+          transform-origin: 50px 92px;
+        }
+        .consultant-arm-right-walk {
+          animation: consultantArmRightSwing 0.65s ease-in-out infinite;
+          transform-origin: 110px 92px;
+        }
+        .consultant-waving-arm {
+          animation: consultantWaveArm 1s ease-in-out infinite;
+          transform-origin: 110px 92px;
+        }
+        .consultant-waving-hand {
+          animation: consultantWaveHand 0.5s ease-in-out infinite;
+          transform-origin: 120px 145px;
         }
 
         @media (prefers-reduced-motion: reduce) {
           .consultant-torso,
           .consultant-eyelids,
           .consultant-gesture-arm,
-          .consultant-speaking-mouth {
+          .consultant-speaking-mouth,
+          .consultant-is-walking,
+          .consultant-leg-left-walk,
+          .consultant-leg-right-walk,
+          .consultant-arm-left-walk,
+          .consultant-arm-right-walk,
+          .consultant-waving-arm,
+          .consultant-waving-hand {
             animation: none !important;
           }
         }
@@ -76,49 +143,58 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
         viewBox="0 0 160 300"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full drop-shadow-2xl overflow-visible"
-        aria-label="Professional Fashion Consultant"
+        className={`w-full h-full drop-shadow-2xl overflow-visible ${isWalking ? 'consultant-is-walking' : ''}`}
+        aria-label="Julian Laurent - Fashion Consultant"
       >
         {/* Floor Shadow */}
-        <ellipse cx="80" cy="292" rx="46" ry="6" fill="rgba(0,0,0,0.35)" />
+        <ellipse 
+          cx="80" 
+          cy="292" 
+          rx={isWalking ? "40" : "46"} 
+          ry={isWalking ? "5" : "6"} 
+          fill="rgba(0,0,0,0.35)" 
+          className="transition-all duration-300"
+        />
 
         {/* LEGS & SHOES */}
         <g id="legs">
-          {/* Trousers - Tailored Dark Charcoal */}
-          <path
-            d="M 62 170 L 60 274 L 74 274 L 76 172 Z"
-            fill="#18191d"
-            stroke="#27272a"
-            strokeWidth="0.8"
-          />
-          <path
-            d="M 84 172 L 86 274 L 100 274 L 98 170 Z"
-            fill="#18191d"
-            stroke="#27272a"
-            strokeWidth="0.8"
-          />
-          {/* Trouser Crease line */}
-          <line x1="67" y1="180" x2="67" y2="270" stroke="#2b2d33" strokeWidth="0.8" />
-          <line x1="93" y1="180" x2="93" y2="270" stroke="#2b2d33" strokeWidth="0.8" />
+          {/* Left Leg */}
+          <g className={isWalking ? 'consultant-leg-left-walk' : ''}>
+            <path
+              d="M 62 170 L 60 274 L 74 274 L 76 172 Z"
+              fill="#18191d"
+              stroke="#27272a"
+              strokeWidth="0.8"
+            />
+            <line x1="67" y1="180" x2="67" y2="270" stroke="#2b2d33" strokeWidth="0.8" />
+            {/* Left Shoe */}
+            <path
+              d="M 57 274 C 57 274 54 282 54 286 C 54 289 60 289 74 289 C 76 289 76 280 76 274 Z"
+              fill="#09090b"
+            />
+            <path d="M 54 286 L 76 286" stroke="#e2a876" strokeWidth="0.5" opacity="0.6" />
+          </g>
 
-          {/* Polished Oxford Shoes */}
-          {/* Left Shoe */}
-          <path
-            d="M 57 274 C 57 274 54 282 54 286 C 54 289 60 289 74 289 C 76 289 76 280 76 274 Z"
-            fill="#09090b"
-          />
-          <path d="M 54 286 L 76 286" stroke="#e2a876" strokeWidth="0.5" opacity="0.6" />
-
-          {/* Right Shoe */}
-          <path
-            d="M 84 274 C 84 280 84 289 86 289 C 100 289 106 289 106 286 C 106 282 103 274 103 274 Z"
-            fill="#09090b"
-          />
-          <path d="M 84 286 L 106 286" stroke="#e2a876" strokeWidth="0.5" opacity="0.6" />
+          {/* Right Leg */}
+          <g className={isWalking ? 'consultant-leg-right-walk' : ''}>
+            <path
+              d="M 84 172 L 86 274 L 100 274 L 98 170 Z"
+              fill="#18191d"
+              stroke="#27272a"
+              strokeWidth="0.8"
+            />
+            <line x1="93" y1="180" x2="93" y2="270" stroke="#2b2d33" strokeWidth="0.8" />
+            {/* Right Shoe */}
+            <path
+              d="M 84 274 C 84 280 84 289 86 289 C 100 289 106 289 106 286 C 106 282 103 274 103 274 Z"
+              fill="#09090b"
+            />
+            <path d="M 84 286 L 106 286" stroke="#e2a876" strokeWidth="0.5" opacity="0.6" />
+          </g>
         </g>
 
-        {/* TORSO & BLAZER (Animated with breathing) */}
-        <g className="consultant-torso" id="torso">
+        {/* TORSO & BLAZER (Animated with breathing or walk bob) */}
+        <g className={!isWalking ? "consultant-torso" : ""} id="torso">
           {/* Inner Knitwear / Mockneck */}
           <path
             d="M 70 76 L 90 76 L 92 110 L 68 110 Z"
@@ -126,37 +202,76 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
           />
           <line x1="72" y1="84" x2="88" y2="84" stroke="#27272a" strokeWidth="1" />
 
-          {/* Left Arm / Sleeve (Standing naturally relaxed) */}
-          <path
-            d="M 46 88 L 38 160 L 48 164 L 56 94 Z"
-            fill="#22242a"
-            stroke="#16171a"
-            strokeWidth="0.8"
-          />
-          {/* Left Hand / Cuff */}
-          <path d="M 40 160 L 48 162 L 47 166 L 39 164 Z" fill="#ffffff" />
-          <path
-            d="M 39 164 C 39 164 36 178 40 182 C 44 184 48 178 48 172 L 46 164 Z"
-            fill="#d8a47f"
-          />
-
-          {/* Right Arm (Slightly poised with styling card/posture) */}
-          <g className="consultant-gesture-arm">
+          {/* Left Arm / Sleeve */}
+          <g className={isWalking ? 'consultant-arm-left-walk' : ''}>
             <path
-              d="M 114 88 L 122 152 L 112 156 L 104 94 Z"
+              d="M 46 88 L 38 160 L 48 164 L 56 94 Z"
               fill="#22242a"
               stroke="#16171a"
               strokeWidth="0.8"
             />
-            {/* Right Hand / Cuff */}
-            <path d="M 112 152 L 120 150 L 121 154 L 113 156 Z" fill="#ffffff" />
+            {/* Left Hand / Cuff */}
+            <path d="M 40 160 L 48 162 L 47 166 L 39 164 Z" fill="#ffffff" />
             <path
-              d="M 112 156 C 112 156 116 172 121 172 C 125 170 123 158 121 152 Z"
+              d="M 39 164 C 39 164 36 178 40 182 C 44 184 48 178 48 172 L 46 164 Z"
               fill="#d8a47f"
             />
-            {/* Minimalist Lookbook Swatch / Pen */}
-            <rect x="117" y="162" width="5" height="16" rx="1.5" fill="#e2a876" />
           </g>
+
+          {/* Right Arm (Waving gesture, Walking swing, or Resting stance) */}
+          {isWaving ? (
+            <g className="consultant-waving-arm">
+              {/* Arm raised up waving */}
+              <path
+                d="M 110 92 L 126 55 L 136 58 L 118 96 Z"
+                fill="#22242a"
+                stroke="#16171a"
+                strokeWidth="0.8"
+              />
+              <path d="M 125 55 L 135 58 L 134 52 L 124 50 Z" fill="#ffffff" />
+              {/* Hand waving */}
+              <g className="consultant-waving-hand">
+                <path
+                  d="M 126 50 C 126 50 128 36 136 34 C 142 36 142 46 138 52 Z"
+                  fill="#d8a47f"
+                />
+                {/* Waving fingers */}
+                <line x1="130" y1="36" x2="134" y2="30" stroke="#d8a47f" strokeWidth="1.8" strokeLinecap="round" />
+                <line x1="134" y1="36" x2="138" y2="31" stroke="#d8a47f" strokeWidth="1.8" strokeLinecap="round" />
+                <line x1="137" y1="37" x2="142" y2="33" stroke="#d8a47f" strokeWidth="1.8" strokeLinecap="round" />
+              </g>
+            </g>
+          ) : isWalking ? (
+            <g className="consultant-arm-right-walk">
+              <path
+                d="M 114 88 L 122 152 L 112 156 L 104 94 Z"
+                fill="#22242a"
+                stroke="#16171a"
+                strokeWidth="0.8"
+              />
+              <path d="M 112 152 L 120 150 L 121 154 L 113 156 Z" fill="#ffffff" />
+              <path
+                d="M 112 156 C 112 156 116 172 121 172 C 125 170 123 158 121 152 Z"
+                fill="#d8a47f"
+              />
+            </g>
+          ) : (
+            <g className="consultant-gesture-arm">
+              <path
+                d="M 114 88 L 122 152 L 112 156 L 104 94 Z"
+                fill="#22242a"
+                stroke="#16171a"
+                strokeWidth="0.8"
+              />
+              <path d="M 112 152 L 120 150 L 121 154 L 113 156 Z" fill="#ffffff" />
+              <path
+                d="M 112 156 C 112 156 116 172 121 172 C 125 170 123 158 121 152 Z"
+                fill="#d8a47f"
+              />
+              {/* Minimalist Lookbook Swatch / Pen */}
+              <rect x="117" y="162" width="5" height="16" rx="1.5" fill="#e2a876" />
+            </g>
+          )}
 
           {/* Tailored Single-Breasted Blazer Body */}
           <path
@@ -167,14 +282,12 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
           />
 
           {/* Sculpted Lapels */}
-          {/* Left Lapel */}
           <path
             d="M 54 86 L 76 86 L 80 134 L 56 122 Z"
             fill="#1f2026"
             stroke="#121316"
             strokeWidth="0.8"
           />
-          {/* Right Lapel */}
           <path
             d="M 106 86 L 84 86 L 80 134 L 104 122 Z"
             fill="#1f2026"
@@ -194,7 +307,6 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
           <rect x="90" y="148" width="18" height="2.5" rx="0.5" fill="#18191d" />
 
           {/* NECK & HEAD */}
-          {/* Neck */}
           <rect x="74" y="60" width="12" height="18" rx="2" fill="#d8a47f" />
           <path d="M 74 68 L 86 68" stroke="#be8967" strokeWidth="1" opacity="0.4" />
 
@@ -204,7 +316,7 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
             fill="#d8a47f"
           />
 
-          {/* Hair - Neat Contemporary Styling */}
+          {/* Hair - Neat Contemporary Chic Styling */}
           <path
             d="M 66 38 C 66 22 75 16 88 18 C 96 20 95 30 94 36 C 92 32 86 30 80 30 C 74 30 68 33 66 38 Z"
             fill="#18181b"
@@ -227,14 +339,23 @@ export const ConsultantAvatar: React.FC<ConsultantAvatarProps> = ({
           {/* Nose */}
           <path d="M 80 41 L 79 48 L 82 48" stroke="#be8967" strokeWidth="1" strokeLinecap="round" />
 
-          {/* Mouth (Talking Animation when speaking) */}
+          {/* Mouth (Talking Animation when speaking / smiling when waving) */}
           {isSpeaking ? (
+            <g>
+              <ellipse cx="80" cy="55" rx="3.5" ry="2.2" fill="#7a3e2a" className="consultant-speaking-mouth" />
+              <path
+                d="M 76 54 Q 80 57 84 54"
+                stroke="#a66e50"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </g>
+          ) : isWaving ? (
             <path
-              d="M 76 54 Q 80 57 84 54"
+              d="M 76 53 Q 80 57 84 53"
               stroke="#a66e50"
-              strokeWidth="1.8"
+              strokeWidth="1.6"
               strokeLinecap="round"
-              className="consultant-speaking-mouth"
             />
           ) : (
             <path
