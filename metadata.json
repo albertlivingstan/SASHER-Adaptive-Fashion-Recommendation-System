@@ -1,0 +1,6 @@
+{
+  "name": "SASHER — Adaptive Fashion Recommendation System",
+  "description": "Secure Adaptive Session-Aware Hybrid E-Commerce Recommendation System combining eye-tracking visual attention, Transformer session intent, and explainable AI.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
