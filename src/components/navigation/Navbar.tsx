@@ -75,11 +75,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
         <nav className="hidden md:flex items-center gap-7 text-xs tracking-wider uppercase font-medium">
           {[
             { id: 'discover', label: 'Discover' },
-            { id: 'telemetry', label: 'Live Telemetry', hasPulse: true },
+            { id: 'gaze_studio', label: 'Live Gaze HUD', hasPulse: true },
+            { id: 'platform_analytics', label: 'Platform Analytics' },
             { id: 'recommendations', label: 'Recommendations' },
             { id: 'insights', label: 'AI Insights' },
-            { id: 'research', label: 'Research' },
-            { id: 'architecture', label: 'Architecture' },
           ].map((navItem) => {
             const isActive = currentTab === navItem.id;
             return (
@@ -189,29 +188,23 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
           Discover
         </button>
         <button
-          onClick={() => setCurrentTab('telemetry')}
-          className={`py-1 cursor-pointer flex items-center gap-1 ${currentTab === 'telemetry' ? 'text-[#ff6b1a] font-medium' : 'text-[#a1a1a6]'}`}
+          onClick={() => setCurrentTab('gaze_studio')}
+          className={`py-1 cursor-pointer flex items-center gap-1 ${currentTab === 'gaze_studio' ? 'text-[#ff6b1a] font-medium' : 'text-[#a1a1a6]'}`}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[#ff6b1a] animate-pulse" />
-          <span>Live Hub</span>
+          <span>Gaze AI</span>
+        </button>
+        <button
+          onClick={() => setCurrentTab('platform_analytics')}
+          className={`py-1 cursor-pointer ${currentTab === 'platform_analytics' ? 'text-[#ff6b1a] font-medium' : 'text-[#a1a1a6]'}`}
+        >
+          Analytics
         </button>
         <button
           onClick={() => setCurrentTab('recommendations')}
           className={`py-1 cursor-pointer ${currentTab === 'recommendations' ? 'text-[#ff6b1a] font-medium' : 'text-[#a1a1a6]'}`}
         >
-          Adaptive AI
-        </button>
-        <button
-          onClick={() => setCurrentTab('insights')}
-          className={`py-1 cursor-pointer ${currentTab === 'insights' ? 'text-[#ff6b1a] font-medium' : 'text-[#a1a1a6]'}`}
-        >
-          Insights
-        </button>
-        <button
-          onClick={() => setCurrentTab('research')}
-          className={`py-1 cursor-pointer ${currentTab === 'research' ? 'text-[#ff6b1a] font-medium' : 'text-[#a1a1a6]'}`}
-        >
-          Research
+          Recommendations
         </button>
       </div>
     </header>

@@ -15,7 +15,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, onE
     toggleWishlist, 
     addToCart, 
     recordInteraction, 
-    currentGazeTarget 
+    currentGazeTarget,
+    triggerProjectForProduct
   } = useSasher();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -176,24 +177,39 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, onE
             )}
           </div>
 
-          <button
-            onClick={handleQuickAdd}
-            disabled={justAdded}
-            data-magnetic
-            className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center gap-1 ${
-              justAdded
-                ? 'bg-[#10b981] text-[#09090b]'
-                : 'bg-[#27272a] hover:bg-[#3f3f46] text-[#f4f4f5]'
-            }`}
-            aria-label="Add to bag"
-            title="Quick add to bag"
-          >
-            {justAdded ? (
-              <Check className="w-3.5 h-3.5" />
-            ) : (
-              <Plus className="w-3.5 h-3.5" />
-            )}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerProjectForProduct(product);
+              }}
+              data-magnetic
+              className="px-2 py-1 bg-[#18181b] hover:bg-[#27272a] text-[#ff6b1a] border border-[#ff6b1a]/40 rounded-lg text-[10px] font-mono tracking-wider transition-colors cursor-pointer flex items-center gap-1"
+              title="Analyze with eye-gaze and suggest cohesive project"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Suggest Project</span>
+            </button>
+
+            <button
+              onClick={handleQuickAdd}
+              disabled={justAdded}
+              data-magnetic
+              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center gap-1 ${
+                justAdded
+                  ? 'bg-[#10b981] text-[#09090b]'
+                  : 'bg-[#27272a] hover:bg-[#3f3f46] text-[#f4f4f5]'
+              }`}
+              aria-label="Add to bag"
+              title="Quick add to bag"
+            >
+              {justAdded ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <Plus className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

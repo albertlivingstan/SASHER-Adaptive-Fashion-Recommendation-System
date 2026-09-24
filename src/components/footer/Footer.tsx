@@ -27,11 +27,17 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
               Discover
             </button>
             <button
-              onClick={() => onSelectTab('telemetry')}
-              className="text-[#ff4d36] hover:text-[#f4f4f5] transition-colors cursor-pointer flex items-center gap-1"
+              onClick={() => onSelectTab('gaze_studio')}
+              className="text-[#ff6b1a] hover:text-[#f4f4f5] transition-colors cursor-pointer flex items-center gap-1"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff4d36] animate-pulse" />
-              <span>Live Telemetry</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff6b1a] animate-pulse" />
+              <span>Gaze AI Studio</span>
+            </button>
+            <button
+              onClick={() => onSelectTab('platform_analytics')}
+              className="text-[#2997ff] hover:text-[#f4f4f5] transition-colors cursor-pointer"
+            >
+              Platform Analytics
             </button>
             <button
               onClick={() => onSelectTab('recommendations')}
@@ -50,12 +56,6 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
               className="text-[#a1a1aa] hover:text-[#f4f4f5] transition-colors cursor-pointer"
             >
               Research & Evaluation
-            </button>
-            <button
-              onClick={() => onSelectTab('architecture')}
-              className="text-[#a1a1aa] hover:text-[#f4f4f5] transition-colors cursor-pointer"
-            >
-              Architecture
             </button>
           </div>
 

@@ -10,10 +10,12 @@ import {
   GazeTarget, 
   AnomalyDetectionState, 
   CartItem,
-  RecommendationExplanation
+  RecommendationExplanation,
+  CompletedOrder
 } from '../types';
 import { INITIAL_PRODUCTS } from '../data/products';
 import { eyeTracker, GazeCallbackPayload } from '../services/eyeTracker';
+import { projectSuggestionService, SuggestedProject, GazeProductAnalysis } from '../services/projectSuggestionService';
 
 interface SasherContextType {
   products: Product[];
@@ -43,6 +45,14 @@ interface SasherContextType {
   completeCalibration: (score: number) => void;
   currentGazeTarget: GazeTarget | null;
   lastGazeCoordinates: { x: number; y: number };
+
+  // Eye-Gaze Suggested Project & Analysis
+  activeSuggestedProject: SuggestedProject | null;
+  activeGazeAnalysis: GazeProductAnalysis | null;
+  isProjectDrawerOpen: boolean;
+  setIsProjectDrawerOpen: (open: boolean) => void;
+  triggerProjectForProduct: (product: Product) => void;
+  addAllProjectItemsToCart: (project: SuggestedProject) => void;
   
   // Debug & Explainability
   isGazeDebugOpen: boolean;
@@ -64,6 +74,15 @@ interface SasherContextType {
   updateCartQuantity: (productId: string, quantity: number) => void;
   isCartDrawerOpen: boolean;
   setIsCartDrawerOpen: (open: boolean) => void;
+  
+  // Checkout & Payment Methods
+  isCheckoutModalOpen: boolean;
+  setIsCheckoutModalOpen: (open: boolean) => void;
+  openCheckout: () => void;
+  closeCheckout: () => void;
+  completedOrders: CompletedOrder[];
+  completeOrder: (order: CompletedOrder) => void;
+  clearCart: () => void;
   
   // Adaptive Notification Toast
   recentAdaptiveNotification: string | null;
@@ -104,6 +123,15 @@ export const SasherProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isGazeDebugOpen, setIsGazeDebugOpen] = useState<boolean>(false);
   const [explanationModalProduct, setExplanationModalProduct] = useState<RecommendedProduct | null>(null);
 
+  // Eye-Gaze Suggested Project & Real-Time Product Analysis State
+  const [activeSuggestedProject, setActiveSuggestedProject] = useState<SuggestedProject | null>(() => {
+    return projectSuggestionService.generateProjectForProduct(INITIAL_PRODUCTS[0]);
+  });
+  const [activeGazeAnalysis, setActiveGazeAnalysis] = useState<GazeProductAnalysis | null>(() => {
+    return projectSuggestionService.analyzeGazedProduct(INITIAL_PRODUCTS[0], 1.2);
+  });
+  const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState<boolean>(false);
+
   // Security / Anomaly State
   const [anomalyState, setAnomalyState] = useState<AnomalyDetectionState>({
     status: 'normal',
@@ -121,6 +149,8 @@ export const SasherProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     { product: INITIAL_PRODUCTS[0], quantity: 1, size: 'M' }
   ]);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [completedOrders, setCompletedOrders] = useState<CompletedOrder[]>([]);
 
   // Compute Dynamic Weights based on session depth & eye tracking
   const dynamicWeights: DynamicWeights = useMemo(() => {
@@ -315,6 +345,10 @@ export const SasherProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         // Trigger discrete EYE_GAZE event upon dwell >= 1.2s
         if (payload.eventDispatched && prod) {
           recordInteraction('EYE_GAZE', prod.id, prod.category, payload.dwellSeconds * 1000, 3.5);
+          const analysis = projectSuggestionService.analyzeGazedProduct(prod, payload.dwellSeconds);
+          const project = projectSuggestionService.generateProjectForProduct(prod);
+          setActiveGazeAnalysis(analysis);
+          setActiveSuggestedProject(project);
         }
       } else {
         setCurrentGazeTarget(null);
@@ -575,6 +609,55 @@ export const SasherProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const dismissAdaptiveNotification = () => setRecentAdaptiveNotification(null);
 
+  const triggerProjectForProduct = (product: Product) => {
+    const analysis = projectSuggestionService.analyzeGazedProduct(product, 1.4);
+    const project = projectSuggestionService.generateProjectForProduct(product);
+    setActiveGazeAnalysis(analysis);
+    setActiveSuggestedProject(project);
+    setIsProjectDrawerOpen(true);
+    recordInteraction('EYE_GAZE', product.id, product.category, 1400, 3.5);
+  };
+
+  const addAllProjectItemsToCart = (project: SuggestedProject) => {
+    setCart(prev => {
+      let updated = [...prev];
+      project.allProducts.forEach(prod => {
+        const existing = updated.find(i => i.product.id === prod.id);
+        if (existing) {
+          updated = updated.map(i => i.product.id === prod.id ? { ...i, quantity: i.quantity + 1 } : i);
+        } else {
+          updated.push({ product: prod, quantity: 1, size: 'M' });
+        }
+      });
+      return updated;
+    });
+    setIsCartDrawerOpen(true);
+    setRecentAdaptiveNotification(`Complete "${project.title}" (${project.allProducts.length} items) added to bag with 15% project savings!`);
+  };
+
+  const openCheckout = () => {
+    setIsCartDrawerOpen(false);
+    setIsCheckoutModalOpen(true);
+  };
+
+  const closeCheckout = () => {
+    setIsCheckoutModalOpen(false);
+  };
+
+  const completeOrder = (order: CompletedOrder) => {
+    setCompletedOrders(prev => [order, ...prev]);
+    recordInteraction(
+      'PURCHASE', 
+      order.items[0]?.product.id || 'ord-01', 
+      order.items[0]?.product.category || 'Outerwear'
+    );
+    setRecentAdaptiveNotification(`Payment authorized. Order ${order.orderNumber} placed successfully.`);
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
   // Auto-dismiss toast
   useEffect(() => {
     if (!recentAdaptiveNotification) return;
@@ -610,6 +693,12 @@ export const SasherProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         completeCalibration,
         currentGazeTarget,
         lastGazeCoordinates,
+        activeSuggestedProject,
+        activeGazeAnalysis,
+        isProjectDrawerOpen,
+        setIsProjectDrawerOpen,
+        triggerProjectForProduct,
+        addAllProjectItemsToCart,
         isGazeDebugOpen,
         toggleGazeDebug,
         explanationModalProduct,
@@ -625,6 +714,13 @@ export const SasherProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateCartQuantity,
         isCartDrawerOpen,
         setIsCartDrawerOpen,
+        isCheckoutModalOpen,
+        setIsCheckoutModalOpen,
+        openCheckout,
+        closeCheckout,
+        completedOrders,
+        completeOrder,
+        clearCart,
         recentAdaptiveNotification,
         dismissAdaptiveNotification
       }}

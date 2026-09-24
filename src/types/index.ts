@@ -162,3 +162,30 @@ export interface AblationStudyData {
   deltaPercent: number;
   description: string;
 }
+
+export type PaymentMethodType = 'CARD' | 'UPI' | 'NET_BANKING' | 'BNPL' | 'APPLE_PAY';
+
+export interface CompletedOrder {
+  id: string;
+  orderNumber: string;
+  timestamp: number;
+  items: CartItem[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  currency: string;
+  paymentMethod: PaymentMethodType;
+  paymentReference: string;
+  shippingAddress: {
+    fullName: string;
+    email: string;
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  journalHash: string;
+}
+

@@ -8,7 +8,8 @@ export const CartDrawer: React.FC = () => {
     removeFromCart, 
     updateCartQuantity, 
     isCartDrawerOpen, 
-    setIsCartDrawerOpen 
+    setIsCartDrawerOpen,
+    openCheckout
   } = useSasher();
 
   if (!isCartDrawerOpen) return null;
@@ -156,8 +157,9 @@ export const CartDrawer: React.FC = () => {
             </div>
 
             <button
+              onClick={openCheckout}
               disabled={cart.length === 0}
-              className="w-full py-3.5 px-4 bg-[#f4f4f5] hover:bg-white disabled:bg-[#27272a] disabled:text-[#71717a] text-[#09090b] rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 bg-[#f4f4f5] hover:bg-white disabled:bg-[#27272a] disabled:text-[#71717a] text-[#09090b] rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-lg"
             >
               <span>Proceed to Checkout</span>
               <ArrowRight className="w-3.5 h-3.5" />

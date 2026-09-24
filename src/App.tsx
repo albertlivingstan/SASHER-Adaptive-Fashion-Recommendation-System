@@ -14,12 +14,14 @@ import { LiveAdaptationDemo } from './components/session/LiveAdaptationDemo';
 import { SessionIntentWidget } from './components/session/SessionIntentWidget';
 import { AiInsightsView } from './components/insights/AiInsightsView';
 import { ResearchDashboardView } from './components/research/ResearchDashboardView';
-import { ArchitectureView } from './components/architecture/ArchitectureView';
 import { TrustStatusPanel } from './components/security/TrustStatusPanel';
 import { Footer } from './components/footer/Footer';
 import { LiveTelemetryHub } from './components/analytics/LiveTelemetryHub';
 import { CustomCursor } from './components/ui/CustomCursor';
 import { GoogleSignInModal } from './components/auth/GoogleSignInModal';
+import { CheckoutModal } from './components/checkout/CheckoutModal';
+import { GazeTrackingStudioView } from './components/eyetracking/GazeTrackingStudioView';
+import { PlatformAnalyticsView } from './components/analytics/PlatformAnalyticsView';
 import { RecommendedProduct } from './types';
 import { Sparkles, Eye, X } from 'lucide-react';
 
@@ -30,7 +32,10 @@ const MainLayout: React.FC = () => {
   const {
     setExplanationModalProduct,
     recentAdaptiveNotification,
-    dismissAdaptiveNotification
+    dismissAdaptiveNotification,
+    isProjectDrawerOpen,
+    setIsProjectDrawerOpen,
+    activeSuggestedProject
   } = useSasher();
 
   const scrollToCatalog = () => {
@@ -42,7 +47,7 @@ const MainLayout: React.FC = () => {
   };
 
   const scrollToHowItWorks = () => {
-    setCurrentTab('architecture');
+    setCurrentTab('gaze_studio');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -77,6 +82,7 @@ const MainLayout: React.FC = () => {
       />
       <WhyRecommendedModal />
       <CartDrawer />
+      <CheckoutModal />
 
       {/* Dynamic Adaptive Notification Toast (Rule 13) */}
       {recentAdaptiveNotification && (
@@ -165,11 +171,13 @@ const MainLayout: React.FC = () => {
           </div>
         )}
 
+        {currentTab === 'gaze_studio' && <GazeTrackingStudioView />}
+
+        {currentTab === 'platform_analytics' && <PlatformAnalyticsView />}
+
         {currentTab === 'insights' && <AiInsightsView />}
 
         {currentTab === 'research' && <ResearchDashboardView />}
-
-        {currentTab === 'architecture' && <ArchitectureView />}
       </main>
 
       {/* Editorial Footer */}
