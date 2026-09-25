@@ -110,7 +110,7 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
     }
   }, [activeModalProduct]);
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
     if (!text) return;
 
@@ -126,17 +126,15 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
     setEmotion('thinking');
     setIsThinking(true);
 
-    // Simulated emotion state machine & consultative response delay with TTS speech
-    setTimeout(() => {
-      setIsThinking(false);
-      setEmotion('analyzing');
-
-      const response = assistantService.handleUserQuery(
+    try {
+      const response = await assistantService.handleUserQueryAsync(
         text,
         activeModalProduct || null,
         recentProductIds
       );
       
+      setIsThinking(false);
+      setEmotion('analyzing');
       setMessages(prev => [...prev, response]);
 
       julianSpeechService.speak(
@@ -151,7 +149,10 @@ export const FashionAssistantChatbot: React.FC<FashionAssistantChatbotProps> = (
           setEmotion('welcoming');
         }
       );
-    }, 450);
+    } catch {
+      setIsThinking(false);
+      setEmotion('welcoming');
+    }
   };
 
   const handleActionButton = (action: string, payload?: any) => {

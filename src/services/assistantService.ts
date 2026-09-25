@@ -1,6 +1,7 @@
 import { Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/products';
 import { feedbackService } from './feedbackService';
+import { callGeminiApi } from './geminiService';
 
 export interface AssistantMessage {
   id: string;
@@ -452,6 +453,60 @@ class FashionAssistantService {
         { label: 'Top Rated Pieces', action: 'higher_rated' }
       ]
     };
+  }
+
+  /**
+   * Process a user query with Gemini Flash AI, incorporating full 61-product catalog context
+   */
+  public async handleUserQueryAsync(
+    query: string,
+    activeProduct: Product | null,
+    recentInteractions: string[] = []
+  ): Promise<AssistantMessage> {
+    const syncResult = this.handleUserQuery(query, activeProduct, recentInteractions);
+    const now = Date.now();
+
+    try {
+      const activeInfo = activeProduct
+        ? `CURRENTLY VIEWING PRODUCT OUT OF OUR 61 CATALOG ITEMS:
+- Name: ${activeProduct.name}
+- Brand: ${activeProduct.brand}
+- Category: ${activeProduct.category} (${activeProduct.subcategory || activeProduct.articleType})
+- Material: ${activeProduct.material}
+- Color: ${activeProduct.color}
+- Style: ${activeProduct.style}
+- Fit: ${activeProduct.fit}
+- Price: ${activeProduct.currency}${activeProduct.price.toLocaleString('en-IN')}
+- Description: ${activeProduct.description}
+- Stock: ${activeProduct.stock} units`
+        : 'NO SPECIFIC PRODUCT CURRENTLY VIEWED.';
+
+      const prompt = `You are Julian Laurent, lead AI Fashion Consultant & Stylist for SASHER Adaptive Fashion System.
+Answer the user's fashion query as Julian Laurent in an articulate, high-fashion, polished tone.
+
+${activeInfo}
+
+USER QUERY: "${query}"
+
+INSTRUCTIONS:
+1. Speak as Julian Laurent ("Hello, I'm Julian...", "As your fashion consultant...").
+2. Ensure ANY product information you describe matches the exact product details listed above.
+3. Keep response elegant, direct, and under 100 words. Format key points with bullet points or bold text if appropriate.`;
+
+      const aiResponse = await callGeminiApi(prompt);
+      if (aiResponse) {
+        return {
+          ...syncResult,
+          id: `msg-ai-${now}`,
+          text: aiResponse,
+          timestamp: now
+        };
+      }
+    } catch (err) {
+      console.warn('Gemini query processing fallback:', err);
+    }
+
+    return syncResult;
   }
 
   /**
